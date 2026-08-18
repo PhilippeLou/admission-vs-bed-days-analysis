@@ -1,10 +1,13 @@
 import streamlit as st
 from clean_data import load_and_clean
+from pathlib import Path
 import step1_volume
 import step2_paradox
 import step3_mechanism
 import step4_breakdown
 import step5_zoomin
+
+DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "discharges_raw.csv"
 
 st.set_page_config(page_title="Inpatient Discharges Analysis", layout="wide")
 
@@ -20,7 +23,7 @@ st.markdown("""
 
 @st.cache_data
 def get_data():
-    return load_and_clean("../data/discharges_raw.csv")
+    return load_and_clean(str(DATA_PATH))
 
 
 df = get_data()
