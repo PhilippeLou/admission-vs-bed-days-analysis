@@ -5,6 +5,7 @@ from theme import BROWN_LIGHT, BROWN_SOFT, BROWN_MID, BROWN_DEEP, BROWN_DARK, BR
 
 SEVERITY_ORDER = ["Minor", "Moderate", "Major", "Extreme"]
 ADMISSION_ORDER = ["Newborn", "Elective", "Urgent", "Emergency", "Trauma"]
+AGE_ORDER = ["0 to 17", "18 to 29", "30 to 49", "50 to 69", "70 or Older"]
 
 
 def render(df):
@@ -18,65 +19,59 @@ patient is, and how the patient was admitted (planned vs. emergency).
 """
     )
 
-    # --- Severity of Illness ---
+    # --- Severity of Illness: box plot shows the full spread, not just the average ---
     st.subheader("Severity of illness is the strongest driver")
-    sev = (
-        df.dropna(subset=["APR Severity of Illness Description"])
-        .groupby("APR Severity of Illness Description", observed=True)["Length of Stay"]
-        .mean()
-        .reindex(SEVERITY_ORDER)
-        .reset_index()
-    )
-    sev.columns = ["Severity", "Avg Length of Stay"]
+    sev_data = df.dropna(subset=["APR Severity of Illness Description", "Length of Stay"]).copy()
+    # cap extreme outliers visually at the 97th percentile so the box plot stays readable
+    cap = sev_data["Length of Stay"].quantile(0.97)
 
     chart_sev = (
-        alt.Chart(sev)
-        .mark_bar()
+        alt.Chart(sev_data)
+        .mark_boxplot(size=40, outliers={"size": 15, "opacity": 0.3})
         .encode(
-            x=alt.X("Severity:N", sort=SEVERITY_ORDER, title=None),
-            y=alt.Y("Avg Length of Stay:Q", title="Average Length of Stay (days)"),
-            tooltip=["Severity", "Avg Length of Stay"],
+            x=alt.X("APR Severity of Illness Description:N", sort=SEVERITY_ORDER, title=None),
+            y=alt.Y("Length of Stay:Q", title="Length of Stay (days)", scale=alt.Scale(domain=[0, cap])),
             color=alt.Color(
-                "Severity:N",
+                "APR Severity of Illness Description:N",
                 scale=alt.Scale(domain=SEVERITY_ORDER, range=[BROWN_LIGHT, BROWN_SOFT, BROWN_DEEP, ACCENT]),
                 legend=None,
             ),
         )
-        .properties(title="Average Length of Stay by Severity of Illness", height=300)
+        .properties(title="Distribution of Length of Stay by Severity of Illness", height=350)
     )
     st.altair_chart(chart_sev, use_container_width=True)
     st.caption(
-        "Patients classified as 'Extreme' severity stay roughly 5x longer on average "
-        "than patients classified as 'Minor' — the clearest single driver in the data."
+        "Each box shows the middle 50% of stays for that severity level. Not only does the "
+        "typical (median) stay grow with severity, but the spread widens too — 'Extreme' "
+        "cases are both longer on average and far more unpredictable in duration."
     )
 
     col1, col2 = st.columns(2)
 
-    # --- Age Group ---
+    # --- Age Group: line chart, since age groups are ordinal and this shows the trend ---
     with col1:
-        age_order = ["0 to 17", "18 to 29", "30 to 49", "50 to 69", "70 or Older"]
         age_los = (
             df.groupby("Age Group", observed=True)["Length of Stay"]
             .mean()
-            .reindex(age_order)
+            .reindex(AGE_ORDER)
             .reset_index()
         )
         age_los.columns = ["Age Group", "Avg Length of Stay"]
+        age_los["order"] = range(len(age_los))
 
-        chart_age = (
+        line = (
             alt.Chart(age_los)
-            .mark_bar()
+            .mark_line(color=BROWN_DEEP, strokeWidth=3, point=alt.OverlayMarkDef(size=80, color=BROWN_DARKEST))
             .encode(
-                x=alt.X("Age Group:N", sort=age_order, title=None),
+                x=alt.X("Age Group:N", sort=AGE_ORDER, title=None),
                 y=alt.Y("Avg Length of Stay:Q", title="Average Length of Stay (days)"),
                 tooltip=["Age Group", "Avg Length of Stay"],
-                color=alt.value(BROWN_MID),
             )
-            .properties(title="Average LOS by Age Group", height=280)
+            .properties(title="Average LOS Rises Steadily with Age", height=300)
         )
-        st.altair_chart(chart_age, use_container_width=True)
+        st.altair_chart(line, use_container_width=True)
 
-    # --- Admission Type ---
+    # --- Admission Type: lollipop chart (line + dot) instead of a plain bar ---
     with col2:
         adm_los = (
             df.dropna(subset=["Type of Admission"])
@@ -88,18 +83,26 @@ patient is, and how the patient was admitted (planned vs. emergency).
         )
         adm_los.columns = ["Type of Admission", "Avg Length of Stay"]
 
-        chart_adm = (
+        stems = (
             alt.Chart(adm_los)
-            .mark_bar()
+            .mark_rule(color=BROWN_MID, strokeWidth=2)
             .encode(
-                x=alt.X("Type of Admission:N", sort=ADMISSION_ORDER, title=None),
-                y=alt.Y("Avg Length of Stay:Q", title="Average Length of Stay (days)"),
-                tooltip=["Type of Admission", "Avg Length of Stay"],
-                color=alt.value(BROWN_DARK),
+                y=alt.Y("Type of Admission:N", sort=ADMISSION_ORDER, title=None),
+                x=alt.X("Avg Length of Stay:Q", title="Average Length of Stay (days)"),
+                x2=alt.value(0),
             )
-            .properties(title="Average LOS by Admission Type", height=280)
         )
-        st.altair_chart(chart_adm, use_container_width=True)
+        dots = (
+            alt.Chart(adm_los)
+            .mark_circle(size=180, color=BROWN_DARK)
+            .encode(
+                y=alt.Y("Type of Admission:N", sort=ADMISSION_ORDER, title=None),
+                x=alt.X("Avg Length of Stay:Q"),
+                tooltip=["Type of Admission", "Avg Length of Stay"],
+            )
+        )
+        lollipop = (stems + dots).properties(title="Average LOS by Admission Type", height=300)
+        st.altair_chart(lollipop, use_container_width=True)
 
     # --- Combined view: severity x admission type heatmap ---
     st.subheader("Severity and admission type together")
