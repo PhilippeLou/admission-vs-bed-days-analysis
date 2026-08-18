@@ -3,6 +3,8 @@
 **An Inpatient Discharge & Length-of-Stay Analysis**
 *by Philippe Louis B. Garibay*
 
+[Streamlit link](https://philippelou-admission-vs-bed-days-analysis-appapp-a9yzrg.streamlit.app/)
+
 An interactive Streamlit dashboard analyzing 74,000+ hospital inpatient discharge
 records to answer a records-office question: which admissions actually consume
 the most hospital capacity — not just which are the most common?
