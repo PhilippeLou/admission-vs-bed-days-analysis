@@ -1,0 +1,9 @@
+BROWN_LIGHT = "#e6d2b5"
+BROWN_SOFT = "#c9a876"
+BROWN_MID = "#a97c50"
+BROWN_DEEP = "#8b5e34"
+BROWN_DARK = "#6b4226"
+BROWN_DARKEST = "#4a2c17"
+ACCENT = "#c0392b"  # reserved for calling out paradox/outlier findings
+
+BROWN_SEQUENCE = [BROWN_LIGHT, BROWN_SOFT, BROWN_MID, BROWN_DEEP, BROWN_DARK, BROWN_DARKEST]
