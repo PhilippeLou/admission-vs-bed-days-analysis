@@ -3,6 +3,7 @@ from clean_data import load_and_clean
 import step1_volume
 import step2_paradox
 import step3_mechanism
+import step4_breakdown
 
 st.set_page_config(page_title="Inpatient Discharges Analysis", layout="wide")
 
@@ -51,3 +52,4 @@ broad volume overview down to a focused look at what drives long hospital stays.
 step1_volume.render(df)
 step2_paradox.render(df)
 step3_mechanism.render(df)
+step4_breakdown.render(df)
