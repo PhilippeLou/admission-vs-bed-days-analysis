@@ -19,31 +19,47 @@ patient is, and how the patient was admitted (planned vs. emergency).
 """
     )
 
-    # --- Severity of Illness: box plot shows the full spread, not just the average ---
+    # --- Severity of Illness: box plot built from pre-aggregated quartiles ---
+    # (Altair caps inline datasets at 5,000 rows; this dataset has 70,000+, so we
+    # summarize to one row per severity level instead of passing raw records.)
     st.subheader("Severity of illness is the strongest driver")
-    sev_data = df.dropna(subset=["APR Severity of Illness Description", "Length of Stay"]).copy()
-    # cap extreme outliers visually at the 97th percentile so the box plot stays readable
-    cap = sev_data["Length of Stay"].quantile(0.97)
+    sev_raw = df.dropna(subset=["APR Severity of Illness Description", "Length of Stay"])
 
-    chart_sev = (
-        alt.Chart(sev_data)
-        .mark_boxplot(size=40, outliers={"size": 15, "opacity": 0.3})
-        .encode(
-            x=alt.X("APR Severity of Illness Description:N", sort=SEVERITY_ORDER, title=None),
-            y=alt.Y("Length of Stay:Q", title="Length of Stay (days)", scale=alt.Scale(domain=[0, cap])),
-            color=alt.Color(
-                "APR Severity of Illness Description:N",
-                scale=alt.Scale(domain=SEVERITY_ORDER, range=[BROWN_LIGHT, BROWN_SOFT, BROWN_DEEP, ACCENT]),
-                legend=None,
-            ),
-        )
-        .properties(title="Distribution of Length of Stay by Severity of Illness", height=350)
+    sev_stats = (
+        sev_raw.groupby("APR Severity of Illness Description", observed=True)["Length of Stay"]
+        .quantile([0.05, 0.25, 0.5, 0.75, 0.95])
+        .unstack()
+        .reindex(SEVERITY_ORDER)
+        .reset_index()
+    )
+    sev_stats.columns = ["Severity", "p05", "q1", "median", "q3", "p95"]
+
+    color_scale = alt.Scale(domain=SEVERITY_ORDER, range=[BROWN_LIGHT, BROWN_SOFT, BROWN_DEEP, ACCENT])
+    base_sev = alt.Chart(sev_stats).encode(
+        x=alt.X("Severity:N", sort=SEVERITY_ORDER, title=None)
+    )
+
+    whiskers = base_sev.mark_rule(color=BROWN_MID).encode(
+        y=alt.Y("p05:Q", title="Length of Stay (days)"), y2="p95:Q"
+    )
+    box = base_sev.mark_bar(size=45).encode(
+        y="q1:Q",
+        y2="q3:Q",
+        color=alt.Color("Severity:N", scale=color_scale, legend=None),
+        tooltip=["Severity", "p05", "q1", "median", "q3", "p95"],
+    )
+    median_tick = base_sev.mark_tick(color="white", thickness=2, size=45).encode(y="median:Q")
+
+    chart_sev = (whiskers + box + median_tick).properties(
+        title="Length of Stay by Severity of Illness (5th–95th percentile range, box = middle 50%)",
+        height=350,
     )
     st.altair_chart(chart_sev, use_container_width=True)
     st.caption(
-        "Each box shows the middle 50% of stays for that severity level. Not only does the "
-        "typical (median) stay grow with severity, but the spread widens too — 'Extreme' "
-        "cases are both longer on average and far more unpredictable in duration."
+        "Each box shows the middle 50% of stays for that severity level, with the white tick "
+        "marking the median and the thin line spanning the 5th-95th percentile range. Not "
+        "only does the typical stay grow with severity, but the spread widens too — "
+        "'Extreme' cases are both longer on average and far more unpredictable in duration."
     )
 
     col1, col2 = st.columns(2)
@@ -71,7 +87,7 @@ patient is, and how the patient was admitted (planned vs. emergency).
         )
         st.altair_chart(line, use_container_width=True)
 
-    # --- Admission Type: lollipop chart (line + dot) instead of a plain bar ---
+    # --- Admission Type: single-layer dot plot (lighter to render than a lollipop) ---
     with col2:
         adm_los = (
             df.dropna(subset=["Type of Admission"])
@@ -83,26 +99,17 @@ patient is, and how the patient was admitted (planned vs. emergency).
         )
         adm_los.columns = ["Type of Admission", "Avg Length of Stay"]
 
-        stems = (
+        dot_chart = (
             alt.Chart(adm_los)
-            .mark_rule(color=BROWN_MID, strokeWidth=2)
+            .mark_circle(size=260, color=BROWN_DARK, opacity=0.9)
             .encode(
                 y=alt.Y("Type of Admission:N", sort=ADMISSION_ORDER, title=None),
                 x=alt.X("Avg Length of Stay:Q", title="Average Length of Stay (days)"),
-                x2=alt.value(0),
-            )
-        )
-        dots = (
-            alt.Chart(adm_los)
-            .mark_circle(size=180, color=BROWN_DARK)
-            .encode(
-                y=alt.Y("Type of Admission:N", sort=ADMISSION_ORDER, title=None),
-                x=alt.X("Avg Length of Stay:Q"),
                 tooltip=["Type of Admission", "Avg Length of Stay"],
             )
+            .properties(title="Average LOS by Admission Type", height=300)
         )
-        lollipop = (stems + dots).properties(title="Average LOS by Admission Type", height=300)
-        st.altair_chart(lollipop, use_container_width=True)
+        st.altair_chart(dot_chart, use_container_width=True)
 
     # --- Combined view: severity x admission type heatmap ---
     st.subheader("Severity and admission type together")
