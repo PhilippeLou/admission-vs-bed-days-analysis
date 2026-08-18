@@ -4,6 +4,7 @@ import step1_volume
 import step2_paradox
 import step3_mechanism
 import step4_breakdown
+import step5_zoomin
 
 st.set_page_config(page_title="Inpatient Discharges Analysis", layout="wide")
 
@@ -53,3 +54,4 @@ step1_volume.render(df)
 step2_paradox.render(df)
 step3_mechanism.render(df)
 step4_breakdown.render(df)
+step5_zoomin.render(df)
