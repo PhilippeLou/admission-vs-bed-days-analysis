@@ -47,3 +47,51 @@ publicly available government health data.
 - **Streamlit** — dashboard framework and deployment
 
 ## Project Structure
+
+hospital-project/
+├── data/
+│ └── discharges_raw.csv # source dataset
+├── app/
+│ ├── clean_data.py # data cleaning & preprocessing
+│ ├── theme.py # shared color palette
+│ ├── step1_volume.py # Section 1: Volume Overview
+│ ├── step2_paradox.py # Section 2: The Paradox
+│ ├── step3_mechanism.py # Section 3: The Mechanism
+│ ├── step4_breakdown.py # Section 4: The Breakdown
+│ ├── step5_zoomin.py # Section 5: Zoom-In (Septicemia)
+│ └── app.py # main entry point
+└── README.md
+
+
+
+## Running Locally
+
+```bash
+pip install pandas altair streamlit
+cd app
+streamlit run app.py
+```
+
+## Dataset & Credits
+
+This project uses the **Hospital Inpatient Discharges (SPARCS De-Identified),
+2021** dataset, sourced from New York State's Statewide Planning and Research
+Cooperative System (SPARCS), as compiled and shared on Kaggle by
+[**bhautikmangukiya12**](https://www.kaggle.com/datasets/bhautikmangukiya12/hospital-inpatient-discharges-dataset).
+
+SPARCS is a comprehensive data reporting system originally established by the
+New York State Department of Health, covering de-identified patient-level
+detail on hospital inpatient discharges, including diagnosis, treatment,
+demographics, length of stay, and charges. All patient identifiers in this
+dataset have been removed or redacted in accordance with SPARCS de-identification
+standards prior to public release.
+
+The analytical framing of this project — telling a data story through a
+"volume → paradox → mechanism → breakdown → zoom-in" narrative arc — was
+inspired by [Our World in Data's](https://ourworldindata.org/) writing on
+plastic pollution.
+
+## Author
+
+**Philippe Louis B. Garibay**
+[GitHub: PhilippeLou](https://github.com/PhilippeLou)
