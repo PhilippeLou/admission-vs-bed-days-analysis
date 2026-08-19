@@ -4,6 +4,7 @@
 *by Philippe Louis B. Garibay*
 
 [Streamlit link](https://philippelou-admission-vs-bed-days-analysis-appapp-a9yzrg.streamlit.app/)
+[Medium Post](https://medium.com/@louisgaribay7000/not-all-admissions-are-equal-what-74-000-hospital-discharges-reveal-about-where-care-actually-8ed0bb34ac73?postPublishedType=initial)
 
 An interactive Streamlit dashboard analyzing 74,000+ hospital inpatient discharge
 records to answer a records-office question: which admissions actually consume
