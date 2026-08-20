@@ -103,8 +103,3 @@ The analytical framing of this project — telling a data story through a
 "volume → paradox → mechanism → breakdown → zoom-in" narrative arc — was
 inspired by [Our World in Data's](https://ourworldindata.org/) writing on
 plastic pollution.
-
-## Author
-
-**Philippe Louis B. Garibay**
-[GitHub: PhilippeLou](https://github.com/PhilippeLou)
