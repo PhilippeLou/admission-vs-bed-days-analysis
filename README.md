@@ -32,16 +32,26 @@ publicly available government health data.
 
 1. **The Volume Overview** — total discharges, admissions by type and age group,
    and where volume concentrates across counties.
+   ![alt text](image.png)
+
 2. **The Paradox: Admissions vs. Bed-Days** — comparing each diagnosis's share of
    admissions against its share of total bed-days, revealing that the most
    *common* diagnoses are not always the most *burdensome*.
+   ![alt text](image-1.png)
+
 3. **The Mechanism** — what actually drives length of stay: severity of illness,
    patient age, and admission type (planned vs. emergency).
+   ![alt text](image-2.png)
+   ![alt text](image-3.png)
+
 4. **The Breakdown** — how length of stay and severity vary across gender, race,
    and payer type.
 5. **Zoom-In: Septicemia** — a focused case study on the diagnosis identified in
    Section 2 as the clearest example of the paradox, examining its cost,
    mortality rate, and patient profile in detail.
+   ![alt text](image-4.png)
+   ![alt text](image-5.png)
+
 
 ## Tech Stack
 
